@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Performance Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300..700&family=JetBrains+Mono:wght@400;600&family=Playfair+Display:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/lucide@0.379.0/dist/umd/lucide.min.js"></script>
+<style>
+/* Art direction: Team performance ops dashboard → premium black + gold, prestige, precision
+   Palette: near-black surfaces, gold accent, warm text
+   Typography: Inter body + JetBrains Mono for data
+   Density: compact-balanced */
+
+:root, [data-theme="light"] {
+  --color-bg: #f5f3ed;
+  --color-surface: #ffffff;
+  --color-surface-2: #fafafa;
+  --color-surface-offset: #efece4;
+  --color-surface-offset-2: #e8e4d9;
+  --color-surface-dynamic: #e2ddd0;
+  --color-divider: #d8d2c4;
+  --color-border: #d1cbb9;
+  --color-text: #2a2824;
+  --color-text-muted: #6b665b;
+  --color-text-faint: #a39e93;
+  --color-text-inverse: #f9f8f4;
+  --color-primary: #d1b65e;
+  --color-primary-hover: #c2a750;
+  --color-primary-highlight: #f0e8d5;
+  --color-success: #6e9b54;
+  --color-success-highlight: #e5f0df;
+  --color-gold: #a67035;
+  --color-gold-highlight: #e8e1d1;
+  --color-blue: #5b82a1;
+  --color-blue-highlight: #dfeaf2;
+  --color-orange: #c47942;
+  --color-error: #a3506b;
+  --color-error-highlight: #f2dfe5;
+  --color-warning: #964219;
+  --shadow-sm: 0 1px 2px oklch(0.2 0.01 80 / 0.06);
+  --shadow-md: 0 4px 12px oklch(0.2 0.01 80 / 0.08);
+  --shadow-lg: 0 12px 32px oklch(0.2 0.01 80 / 0.12);
+  --radius-sm: 0.375rem;
+  --radius-md: 0.5rem;
+  --radius-lg: 0.75rem;
+  --radius-xl: 1rem;
+  --radius-full: 9999px;
+  --transition-interactive: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+  --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+  --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+  --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+  --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-10: 2.5rem;
+  --space-12: 3rem;
+  --font-body: 'Inter', sans-serif;
+  --font-heading: 'Playfair Display', serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  --sidebar-width: 220px;
+}
+
+[data-theme="dark"] {
+  --color-bg: #0a0a09;
+  --color-surface: #121110;
+  --color-surface-2: #161514;
+  --color-surface-offset: #1a1816;
+  --color-surface-offset-2: #1e1c1a;
+  --color-surface-dynamic: #24221f;
+  --color-divider: #262420;
+  --color-border: #33302a;
+  --color-text: #eae6db;
+  --color-text-muted: #a39e93;
+  --color-text-faint: #6b665b;
+  --color-text-inverse: #0f0e0c;
+  --color-primary: #d1b65e;
+  --color-primary-hover: #e2c582;
+  --color-primary-highlight: #2a2416;
+  --color-success: #6e9b54;
+  --color-success-highlight: #26331e;
+  --color-gold: #c28b4a;
+  --color-gold-highlight: #332b1a;
+  --color-blue: #5b82a1;
+  --color-blue-highlight: #1e2b36;
+  --color-orange: #c47942;
+  --color-error: #a3506b;
+  --color-error-highlight: #361a23;
+  --color-warning: #964219;
+  --shadow-sm: 0 1px 2px oklch(0 0 0 / 0.4);
+  --shadow-md: 0 4px 12px oklch(0 0 0 / 0.5);
+  --shadow-lg: 0 12px 32px oklch(0 0 0 / 0.6);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { -webkit-font-smoothing: antialiased; scroll-behavior: smooth; }
+body { min-height: 100dvh; font-family: var(--font-body); font-size: var(--text-sm); color: var(--color-text); background-color: var(--color-bg); display: flex; }
+h1, h2, h3, h4, .logo-text, .card-title, .modal-title { font-family: var(--font-heading); font-weight: 600; letter-spacing: -0.01em; }
+img, svg { display: block; }
+button { cursor: pointer; background: none; border: none; font: inherit; color: inherit; }
+table { border-collapse: collapse; width: 100%; }
+
+/* SIDEBAR */
+.sidebar {
+  width: var(--sidebar-width);
+  min-height: 100dvh;
+  background: var(--color-surface-offset);
+  border-right: 1px solid var(--color-border);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100dvh;
+  flex-shrink: 0;
+  z-index: 100;
+}
+
+.sidebar-logo {
+  padding: var(--space-5) var(--space-4);
+  border-bottom: 1px solid var(--color-divider);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.logo-mark {
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-size: var(--text-sm);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
+  line-height: 1.2;
+}
+
+.logo-sub {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: 400;
+}
+
+.sidebar-nav {
+  padding: var(--space-4) var(--space-3);
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.nav-label {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-faint);
+  padding: var(--space-3) var(--space-2) var(--space-1);
+  margin-top: var(--space-2);
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  transition: background var(--transition-interactive), color var(--transition-interactive);
+  text-decoration: none;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.nav-item:hover { background: var(--color-surface-offset); color: var(--color-text); }
+.nav-item.active { background: var(--color-primary-highlight); color: var(--color-primary); font-weight: 600; }
+.nav-item svg { flex-shrink: 0; }
+
+.sidebar-footer {
+  padding: var(--space-4) var(--space-3);
+  border-top: 1px solid var(--color-divider);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.week-badge {
+  font-size: var(--text-xs);
+  background: var(--color-primary-highlight);
+  color: var(--color-primary);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  font-weight: 600;
+}
+
+/* MAIN */
+.main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow-x: hidden;
+}
+
+.topbar {
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--color-divider);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--color-surface);
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.topbar-left h1 {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.topbar-left p {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background var(--transition-interactive), color var(--transition-interactive), box-shadow var(--transition-interactive);
+  border: 1px solid transparent;
+}
+
+.btn-primary {
+  background: var(--color-primary);
+  color: #0d0d0d;
+  border-color: var(--color-primary);
+  font-weight: 600;
+}
+.btn-primary:hover { background: var(--color-primary-hover); box-shadow: 0 0 16px oklch(from var(--color-primary) l c h / 0.4); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--color-text-muted);
+  border-color: var(--color-border);
+}
+.btn-ghost:hover { background: var(--color-surface-offset); color: var(--color-text); }
+
+.theme-toggle {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  color: var(--color-text-muted);
+  transition: background var(--transition-interactive), color var(--transition-interactive);
+  border: 1px solid var(--color-border);
+}
+.theme-toggle:hover { background: var(--color-surface-offset); color: var(--color-text); }
+
+/* CONTENT */
+.content {
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  max-width: 1400px;
+  width: 100%;
+}
+
+/* VIEWS */
+.view { display: none; }
+.view.active { display: contents; }
+
+/* KPI ROW */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--space-4);
+}
+
+.kpi-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-top: 2px solid var(--color-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  box-shadow: var(--shadow-sm);
+  transition: box-shadow var(--transition-interactive), border-color var(--transition-interactive);
+}
+.kpi-card:hover { box-shadow: var(--shadow-md); border-top-color: var(--color-primary-hover); }
+
+.kpi-label {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.kpi-value {
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums lining-nums;
+  color: var(--color-primary);
+  transition: color 0.5s ease;
+}
+
+.kpi-delta {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+.kpi-delta.up { color: var(--color-success); }
+.kpi-delta.down { color: var(--color-error); }
+.kpi-delta.neutral { color: var(--color-text-muted); }
+
+.kpi-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: var(--radius-full);
+  flex-shrink: 0;
+}
+.dot-teal { background: var(--color-primary); }
+.dot-gold { background: var(--color-gold); }
+.dot-blue { background: var(--color-blue); }
+.dot-green { background: var(--color-success); }
+.dot-orange { background: var(--color-orange); }
+
+/* CHARTS GRID */
+.charts-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--space-4);
+}
+
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+}
+
+.card-header {
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--color-divider);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.card-title {
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.card-subtitle {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  margin-top: 2px;
+}
+
+.card-body {
+  padding: var(--space-4) var(--space-5);
+}
+
+.chart-wrap {
+  position: relative;
+  height: 240px;
+}
+
+/* TABLES */
+.table-wrap {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  font-size: var(--text-xs);
+}
+
+.data-table th {
+  text-align: left;
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-text-muted);
+  border-bottom: 1px solid var(--color-divider);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+.data-table th:hover { color: var(--color-text); }
+
+.data-table td {
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid oklch(from var(--color-text) l c h / 0.06);
+  font-variant-numeric: tabular-nums lining-nums;
+  vertical-align: middle;
+}
+
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tbody tr { transition: background var(--transition-interactive); }
+.data-table tbody tr:hover { background: var(--color-surface-offset); }
+
+/* BADGES */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.badge-a { background: var(--color-primary-highlight); color: var(--color-primary); border: 1px solid oklch(from var(--color-primary) l c h / 0.3); }
+.badge-b { background: var(--color-gold-highlight); color: var(--color-gold); }
+.badge-c { background: var(--color-blue-highlight); color: var(--color-blue); }
+.badge-ops { background: var(--color-primary-highlight); color: var(--color-primary); }
+.badge-eng { background: var(--color-blue-highlight); color: var(--color-blue); }
+.badge-mkt { background: var(--color-gold-highlight); color: var(--color-gold); }
+
+/* PROGRESS BAR */
+.progress-wrap { display: flex; align-items: center; gap: var(--space-3); }
+.progress-bar-bg {
+  flex: 1;
+  height: 6px;
+  background: var(--color-surface-offset);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.progress-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-hover));
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 0 8px oklch(from var(--color-primary) l c h / 0.4);
+}
+.progress-val {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+  min-width: 36px;
+  text-align: right;
+}
+
+/* WEEK TRACKER */
+.week-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-3);
+}
+
+.week-cell {
+  background: var(--color-surface-offset);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-xs);
+}
+.week-cell.current { border: 1px solid var(--color-primary); }
+.week-cell-label {
+  color: var(--color-text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.week-cell-label .current-tag {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  font-size: 10px;
+}
+.week-cell-tasks {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--color-text);
+}
+.week-cell-gbp {
+  color: var(--color-primary);
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+/* DEPT BREAKDOWN */
+.dept-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.dept-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.dept-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--text-xs);
+}
+
+.dept-name { font-weight: 600; color: var(--color-text); }
+.dept-gbp { font-family: var(--font-mono); color: var(--color-text-muted); }
+
+.dept-bar-bg {
+  height: 8px;
+  background: var(--color-surface-offset);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+}
+.dept-bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width 1s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* RESPONSIVE */
+.mobile-menu-btn { display: none; }
+.sidebar-overlay { display: none; }
+
+@media (max-width: 900px) {
+  .charts-grid { grid-template-columns: 1fr; }
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .week-grid { grid-template-columns: repeat(2, 1fr); }
+  
+  .sidebar { 
+    position: fixed; 
+    left: 0;
+    top: 0;
+    height: 100dvh;
+    transform: translateX(-100%); 
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1); 
+    z-index: 200; 
+  }
+  .sidebar.open { transform: translateX(0); }
+  .sidebar-overlay { 
+    position: fixed; 
+    inset: 0; 
+    background: oklch(0 0 0 / 0.5); 
+    z-index: 190; 
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+  }
+  .sidebar-overlay.open { opacity: 1; pointer-events: auto; }
+  
+  .mobile-menu-btn { 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    background: none; 
+    border: none; 
+    color: var(--color-text); 
+    cursor: pointer; 
+    padding: var(--space-2); 
+    margin-right: var(--space-2); 
+    border-radius: var(--radius-md); 
+  }
+  .mobile-menu-btn:hover { background: var(--color-surface-offset); }
+  
+  .topbar { flex-wrap: wrap; gap: var(--space-4); }
+  .topbar-right { width: 100%; justify-content: flex-start; overflow-x: auto; padding-bottom: 4px; }
+  
+  /* Modal changes */
+  .modal-box { padding: var(--space-4); margin: var(--space-4); }
+}
+
+@media (max-width: 640px) {
+  .content { padding: var(--space-4); }
+  .topbar { padding: var(--space-3) var(--space-4); }
+  .kpi-grid { grid-template-columns: 1fr; }
+  .week-grid { grid-template-columns: 1fr; }
+  .form-row { grid-template-columns: 1fr; }
+  
+  .btn-text { display: none; }
+  .btn { padding: var(--space-2); }
+  .topbar-left h1 { font-size: var(--text-base); }
+  .topbar-left p { font-size: 10px; }
+  
+  .card-header { flex-direction: column; align-items: flex-start; }
+}
+
+/* HEADER UPDATE PULSE */
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.live-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background: var(--color-success);
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+/* NUMBER ANIMATION */
+@keyframes count-up { from { opacity: 0.4; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.kpi-value.animating { animation: count-up 0.4s ease-out forwards; }
+
+/* EMPTY/SCROLL */
+.scroll-region { overflow-y: auto; flex: 1; }
+
+/* WEEK SELECT TABS */
+.tab-row {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+}
+.tab-btn {
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: var(--color-surface-offset);
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all var(--transition-interactive);
+}
+.tab-btn:hover { background: var(--color-surface-dynamic); color: var(--color-text); }
+.tab-btn.active { background: var(--color-primary-highlight); color: var(--color-primary); border-color: var(--color-primary); font-weight: 600; }
+
+/* MODAL / EDIT PANEL */
+.edit-modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: oklch(0.1 0 0 / 0.6);
+  z-index: 200;
+  align-items: center;
+  justify-content: center;
+}
+.edit-modal.open { display: flex; }
+.modal-box {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  width: min(480px, 94vw);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+.modal-title {
+  font-size: var(--text-lg);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+.form-group { display: flex; flex-direction: column; gap: var(--space-2); }
+.form-label { font-size: var(--text-xs); font-weight: 600; color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-3); }
+.form-input {
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-surface-offset);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  transition: border-color var(--transition-interactive), box-shadow var(--transition-interactive);
+}
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px oklch(from var(--color-primary) l c h / 0.15);
+}
+.form-select { appearance: none; cursor: pointer; }
+.modal-actions { display: flex; gap: var(--space-3); justify-content: flex-end; }
+
+/* TOAST */
+.toast-container { position: fixed; bottom: var(--space-6); right: var(--space-6); z-index: 300; display: flex; flex-direction: column; gap: var(--space-2); }
+.toast {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-sm);
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  animation: slideIn 0.3s ease-out;
+  max-width: 320px;
+}
+@keyframes slideIn { from { transform: translateX(100%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+@keyframes slideOut { from { transform: translateX(0); opacity: 1; } to { transform: translateX(100%); opacity: 0; } }
+.toast.removing { animation: slideOut 0.3s ease-in forwards; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR OVERLAY -->
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <svg class="logo-mark" viewBox="0 0 32 32" fill="none" aria-label="PerfOps logo">
+      <rect width="32" height="32" rx="8" fill="var(--color-primary)" opacity="0.2"/>
+      <rect x="6" y="18" width="4" height="8" rx="1.5" fill="var(--color-primary)"/>
+      <rect x="12" y="13" width="4" height="13" rx="1.5" fill="var(--color-primary)" opacity="0.8"/>
+      <rect x="18" y="8" width="4" height="18" rx="1.5" fill="var(--color-primary)" opacity="0.6"/>
+      <rect x="24" y="4" width="4" height="22" rx="1.5" fill="var(--color-primary)" opacity="0.4"/>
+      <circle cx="8" cy="14" r="2" fill="var(--color-gold)"/>
+    </svg>
+    <div>
+      <div class="logo-text">PerfOps</div>
+      <div class="logo-sub">Team Dashboard</div>
+    </div>
+  </div>
+
+  <nav class="sidebar-nav">
+    <button class="nav-item active" onclick="showView('overview')" data-nav="overview">
+      <i data-lucide="layout-dashboard" width="16" height="16"></i>
+      Overview
+    </button>
+    <button class="nav-item" onclick="showView('participants')" data-nav="participants">
+      <i data-lucide="users" width="16" height="16"></i>
+      Participants
+    </button>
+    <button class="nav-item" onclick="showView('tasks')" data-nav="tasks">
+      <i data-lucide="check-square" width="16" height="16"></i>
+      Tasks
+    </button>
+
+    <div class="nav-label">Departments</div>
+    <button class="nav-item" onclick="filterDept('Operations')" data-nav="dept-ops">
+      <i data-lucide="settings-2" width="16" height="16"></i>
+      Operations
+    </button>
+    <button class="nav-item" onclick="filterDept('Engineering')" data-nav="dept-eng">
+      <i data-lucide="code-2" width="16" height="16"></i>
+      Engineering
+    </button>
+    <button class="nav-item" onclick="filterDept('Marketing')" data-nav="dept-mkt">
+      <i data-lucide="megaphone" width="16" height="16"></i>
+      Marketing
+    </button>
+  </nav>
+
+  <div class="sidebar-footer">
+    <span class="week-badge" id="sidebar-week">Week 4</span>
+    <div style="display:flex;gap:var(--space-2);align-items:center;">
+      <div class="live-dot" title="Live tracking"></div>
+      <button class="theme-toggle" data-theme-toggle aria-label="Toggle theme">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+      </button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="topbar-left" style="display:flex; align-items:center;">
+      <button class="mobile-menu-btn" onclick="toggleSidebar()" aria-label="Open menu">
+        <i data-lucide="menu" width="24" height="24"></i>
+      </button>
+      <div>
+        <h1 id="view-title">Team Performance Overview</h1>
+        <p id="view-subtitle">Programme Q2 2026 · All 3 departments · 4-week tracking</p>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="week-tabs" style="display:flex;gap:var(--space-2);">
+        <button class="tab-btn active" onclick="setWeek(1, this)">Wk 1</button>
+        <button class="tab-btn" onclick="setWeek(2, this)">Wk 2</button>
+        <button class="tab-btn" onclick="setWeek(3, this)">Wk 3</button>
+        <button class="tab-btn active-current" onclick="setWeek(4, this)" style="background:var(--color-primary-highlight);color:var(--color-primary);border-color:var(--color-primary);font-weight:600;">Wk 4 ★</button>
+      </div>
+      <button class="btn btn-primary" onclick="openAddModal()">
+        <i data-lucide="plus" width="14" height="14"></i>
+        <span class="btn-text">Log Task</span>
+      </button>
+      <button class="btn btn-ghost" onclick="exportCSV()">
+        <i data-lucide="download" width="14" height="14"></i>
+        <span class="btn-text">Export</span>
+      </button>
+    </div>
+  </header>
+
+  <div class="scroll-region">
+  <div class="content">
+
+    <!-- OVERVIEW VIEW -->
+    <div class="view active" id="view-overview">
+
+      <!-- KPIs -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label"><span class="kpi-dot dot-teal"></span> Total INR Earned</div>
+          <div class="kpi-value" id="kpi-inr">₹0</div>
+          <div class="kpi-delta up" id="kpi-inr-delta">↑ +12% vs last week</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><span class="kpi-dot dot-gold"></span> Tasks Completed</div>
+          <div class="kpi-value" id="kpi-tasks">0</div>
+          <div class="kpi-delta up" id="kpi-tasks-delta">↑ +8 vs last week</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><span class="kpi-dot dot-blue"></span> Active Participants</div>
+          <div class="kpi-value" id="kpi-participants">0</div>
+          <div class="kpi-delta neutral">Across 3 departments</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><span class="kpi-dot dot-green"></span> Avg INR / Person</div>
+          <div class="kpi-value" id="kpi-avg">₹0</div>
+          <div class="kpi-delta up" id="kpi-avg-delta">↑ vs programme avg</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label"><span class="kpi-dot dot-orange"></span> Grade A Tasks</div>
+          <div class="kpi-value" id="kpi-grade-a">0</div>
+          <div class="kpi-delta" id="kpi-grade-a-pct" style="color:var(--color-gold);">of total tasks</div>
+        </div>
+      </div>
+
+      <!-- CHARTS -->
+      <div class="charts-grid">
+        <div class="card">
+          <div class="card-header">
+            <div>
+              <div class="card-title">Weekly Activity Trend</div>
+              <div class="card-subtitle">INR earned + tasks completed per week</div>
+            </div>
+          </div>
+          <div class="card-body">
+            <div class="chart-wrap">
+              <canvas id="trendChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">Dept. Contribution</div>
+          </div>
+          <div class="card-body">
+            <div class="chart-wrap" style="height:180px">
+              <canvas id="deptChart"></canvas>
+            </div>
+            <div class="dept-list" style="margin-top:var(--space-4)" id="dept-list">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- WEEK TRACKER -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">4-Week Tracking Structure</div>
+        </div>
+        <div class="card-body">
+          <div class="week-grid" id="week-grid"></div>
+        </div>
+      </div>
+
+      <!-- TASKS BY CATEGORY -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Tasks by Category &amp; Grade</div>
+        </div>
+        <div class="card-body">
+          <div class="chart-wrap" style="height:200px">
+            <canvas id="categoryChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- PARTICIPANTS VIEW -->
+    <div class="view" id="view-participants">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Participant Leaderboard</div>
+            <div class="card-subtitle">INR earned · All departments</div>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th onclick="sortTable('name')">Name ↕</th>
+                  <th onclick="sortTable('dept')">Dept ↕</th>
+                  <th onclick="sortTable('gbp')">GBP ↕</th>
+                  <th onclick="sortTable('tasks')">Tasks ↕</th>
+                  <th onclick="sortTable('grade')">Top Grade ↕</th>
+                  <th>Progress (Target ₹25,000)</th>
+                  <th>Wk Trend</th>
+                </tr>
+              </thead>
+              <tbody id="participant-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TASKS VIEW -->
+    <div class="view" id="view-tasks">
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <div class="card-title">Task Log</div>
+            <div class="card-subtitle">All completed tasks · Filterable by department &amp; grade</div>
+          </div>
+          <div style="display:flex;gap:var(--space-2);">
+            <select class="form-input form-select" style="padding:var(--space-1) var(--space-3);font-size:var(--text-xs);" onchange="filterTasks(this.value, document.getElementById('grade-filter').value)" id="dept-filter">
+              <option value="">All Depts</option>
+              <option>Operations</option>
+              <option>Engineering</option>
+              <option>Marketing</option>
+            </select>
+            <select class="form-input form-select" style="padding:var(--space-1) var(--space-3);font-size:var(--text-xs);" onchange="filterTasks(document.getElementById('dept-filter').value, this.value)" id="grade-filter">
+              <option value="">All Grades</option>
+              <option>A</option>
+              <option>B</option>
+              <option>C</option>
+            </select>
+          </div>
+        </div>
+        <div class="card-body" style="padding:0">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Participant</th>
+                  <th>Department</th>
+                  <th>Category</th>
+                  <th>Task</th>
+                  <th>Grade</th>
+                  <th>GBP</th>
+                  <th>Week</th>
+                </tr>
+              </thead>
+              <tbody id="task-tbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  </div>
+</main>
+
+<!-- ADD TASK MODAL -->
+<div class="edit-modal" id="add-modal" role="dialog" aria-label="Log new task">
+  <div class="modal-box">
+    <div class="modal-title">Log New Task</div>
+    <div class="form-group">
+      <label class="form-label">Participant</label>
+      <select class="form-input form-select" id="modal-participant">
+        <option value="">Select participant...</option>
+      </select>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Category</label>
+        <select class="form-input form-select" id="modal-category">
+          <option>Operations</option>
+          <option>Engineering</option>
+          <option>Marketing</option>
+          <option>Research</option>
+          <option>Leadership</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Grade</label>
+        <select class="form-input form-select" id="modal-grade">
+          <option>A</option>
+          <option>B</option>
+          <option>C</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">INR Earned</label>
+        <input class="form-input" type="number" id="modal-gbp" placeholder="e.g. 15000" min="0" max="500000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Week</label>
+        <select class="form-input form-select" id="modal-week">
+          <option value="1">Week 1</option>
+          <option value="2">Week 2</option>
+          <option value="3">Week 3</option>
+          <option value="4" selected>Week 4</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Task Name</label>
+      <input class="form-input" type="text" id="modal-task" placeholder="e.g. Full Team Performance Dashboard Built">
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="submitTask()">Log Task</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div class="toast-container" id="toast-container"></div>
+
+<script>
+// ─── DATA ───────────────────────────────────────────────────────────────────
+
+const PARTICIPANTS = [
+  { id: 1, name: "Alex Chen",       dept: "Operations",  target: 300 },
+  { id: 2, name: "Sarah Mills",     dept: "Operations",  target: 300 },
+  { id: 3, name: "Jordan Okafor",   dept: "Engineering", target: 300 },
+  { id: 4, name: "Priya Singh",     dept: "Engineering", target: 300 },
+  { id: 5, name: "Tom Blackwood",   dept: "Engineering", target: 300 },
+  { id: 6, name: "Layla Hassan",    dept: "Marketing",   target: 300 },
+  { id: 7, name: "Marcus Reid",     dept: "Marketing",   target: 300 },
+  { id: 8, name: "Chloe Nguyen",    dept: "Marketing",   target: 300 },
+  { id: 9, name: "Ravi Patel",      dept: "Operations",  target: 300 },
+];
+
+let tasks = [
+  // Week 1: 4 tasks, ~450 GBP
+  { id:"T001", pid:1, category:"Operations",   task:"Process Automation Setup",         grade:"B", gbp:100, week:1 },
+  { id:"T003", pid:3, category:"Engineering",  task:"API Integration Module",           grade:"A", gbp:200, week:1 },
+  { id:"T005", pid:6, category:"Marketing",    task:"Social Media Calendar Q2",         grade:"B", gbp:90,  week:1 },
+  { id:"T006", pid:7, category:"Marketing",    task:"Email Campaign Design",            grade:"C", gbp:60,  week:1 },
+
+  // Week 2: 7 tasks, ~850 GBP
+  { id:"T007", pid:1, category:"Leadership",   task:"Team Standup Facilitation",        grade:"A", gbp:150, week:2 },
+  { id:"T008", pid:3, category:"Engineering",  task:"Database Optimisation",            grade:"A", gbp:175, week:2 },
+  { id:"T009", pid:5, category:"Engineering",  task:"Unit Test Coverage 80%",           grade:"B", gbp:110, week:2 },
+  { id:"T010", pid:8, category:"Marketing",    task:"Brand Audit Report",               grade:"A", gbp:160, week:2 },
+  { id:"T011", pid:9, category:"Operations",   task:"Supplier Onboarding Process",      grade:"C", gbp:50,  week:2 },
+  { id:"T012", pid:2, category:"Operations",   task:"SOP Documentation",                grade:"A", gbp:130, week:2 },
+  { id:"T002", pid:2, category:"Operations",   task:"Weekly Report Template",           grade:"B", gbp:75,  week:2 },
+
+  // Week 3: 5 tasks, ~550 GBP
+  { id:"T013", pid:4, category:"Research",     task:"Competitor Analysis",              grade:"B", gbp:100, week:3 },
+  { id:"T014", pid:6, category:"Marketing",    task:"LinkedIn Growth Campaign",         grade:"A", gbp:140, week:3 },
+  { id:"T016", pid:3, category:"Engineering",  task:"CI/CD Pipeline Setup",             grade:"A", gbp:210, week:3 },
+  { id:"T018", pid:9, category:"Operations",   task:"Inventory Audit",                  grade:"C", gbp:50,  week:3 },
+  { id:"T004", pid:4, category:"Engineering",  task:"Code Review Standards Doc",        grade:"C", gbp:50,  week:3 },
+
+  // Week 4: 8 tasks, ~1100 GBP
+  { id:"T019", pid:5, category:"Engineering",  task:"Security Patch Implementation",    grade:"A", gbp:180, week:4 },
+  { id:"T020", pid:8, category:"Marketing",    task:"Influencer Outreach Campaign",     grade:"A", gbp:150, week:4 },
+  { id:"T021", pid:2, category:"Operations",   task:"Team Performance Dashboard Built", grade:"A", gbp:160, week:4 },
+  { id:"T022", pid:4, category:"Engineering",  task:"Mobile Responsiveness Audit",      grade:"B", gbp:110, week:4 },
+  { id:"T023", pid:6, category:"Marketing",    task:"Press Release Writing",            grade:"B", gbp:90,  week:4 },
+  { id:"T024", pid:9, category:"Operations",   task:"Vendor Contract Review",           grade:"A", gbp:135, week:4 },
+  { id:"T017", pid:1, category:"Operations",   task:"Budget Forecasting Model",         grade:"A", gbp:170, week:4 },
+  { id:"T015", pid:7, category:"Marketing",    task:"Webinar Coordination",             grade:"B", gbp:105, week:4 },
+];
+
+let currentWeek = 4;
+let currentView = "overview";
+let charts = {};
+let sortField = "gbp";
+let sortAsc = false;
+let deptFilter = "";
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+
+function getParticipant(pid) { return PARTICIPANTS.find(p => p.id === pid); }
+function getDeptColor(dept) {
+  return { "Operations": getComputedStyle(document.documentElement).getPropertyValue("--color-primary").trim(),
+           "Engineering": getComputedStyle(document.documentElement).getPropertyValue("--color-blue").trim(),
+           "Marketing": getComputedStyle(document.documentElement).getPropertyValue("--color-gold").trim() }[dept] || "#888";
+}
+
+function gradeBadge(g) {
+  const cls = { A: "badge-a", B: "badge-b", C: "badge-c" }[g] || "";
+  return `<span class="badge ${cls}">${g}</span>`;
+}
+
+function deptBadge(d) {
+  const cls = { "Operations": "badge-ops", "Engineering": "badge-eng", "Marketing": "badge-mkt" }[d] || "";
+  return `<span class="badge ${cls}">${d}</span>`;
+}
+
+function sparkline(pid) {
+  const weekData = [1,2,3,4].map(w => tasks.filter(t => t.pid === pid && t.week === w).reduce((s,t) => s+t.gbp, 0));
+  const max = Math.max(...weekData, 1);
+  const pts = weekData.map((v,i) => `${i*20},${20 - (v/max)*18}`).join(" ");
+  const color = getComputedStyle(document.documentElement).getPropertyValue("--color-primary").trim();
+  return `<svg width="80" height="22" viewBox="0 0 80 22"><polyline points="${pts}" fill="none" stroke="${color}" stroke-width="2" stroke-linejoin="round"/></svg>`;
+}
+
+function toast(msg, type = "success") {
+  const c = document.getElementById("toast-container");
+  const t = document.createElement("div");
+  t.className = "toast";
+  const icon = type === "success" ? "✓" : type === "error" ? "✕" : "ℹ";
+  const col = type === "success" ? "var(--color-success)" : type === "error" ? "var(--color-error)" : "var(--color-primary)";
+  t.innerHTML = `<span style="color:${col};font-weight:700">${icon}</span><span>${msg}</span>`;
+  c.appendChild(t);
+  setTimeout(() => { t.classList.add("removing"); setTimeout(() => t.remove(), 300); }, 3000);
+}
+
+// ─── STATS ───────────────────────────────────────────────────────────────────
+
+function getStats(week = null) {
+  const filtered = week ? tasks.filter(t => t.week === week) : tasks;
+  const totalGBP = filtered.reduce((s,t) => s+t.gbp, 0);
+  const totalTasks = filtered.length;
+  const gradeA = filtered.filter(t => t.grade === "A").length;
+  const activeParticipants = [...new Set(filtered.map(t => t.pid))].length;
+  const avgGBP = activeParticipants > 0 ? Math.round(totalGBP / activeParticipants) : 0;
+  return { totalGBP, totalTasks, gradeA, participants: activeParticipants, avgGBP };
+}
+
+function getParticipantStats(pid) {
+  const ptasks = tasks.filter(t => t.pid === pid);
+  const gbp = ptasks.reduce((s,t) => s+t.gbp, 0);
+  const taskCount = ptasks.length;
+  const topGrade = ptasks.some(t => t.grade === "A") ? "A" : ptasks.some(t => t.grade === "B") ? "B" : ptasks.length ? "C" : "—";
+  return { gbp, taskCount, topGrade };
+}
+
+function getWeeklyTrend() {
+  return [1,2,3,4].map(w => {
+    const wt = tasks.filter(t => t.week === w);
+    return { gbp: wt.reduce((s,t) => s+t.gbp, 0), count: wt.length };
+  });
+}
+
+function getDeptStats() {
+  return ["Operations","Engineering","Marketing"].map(dept => {
+    const members = PARTICIPANTS.filter(p => p.dept === dept);
+    const deptTasks = tasks.filter(t => members.some(m => m.id === t.pid) && t.week === currentWeek);
+    return { dept, gbp: deptTasks.reduce((s,t) => s+t.gbp, 0), count: deptTasks.length };
+  });
+}
+
+function getCategoryStats() {
+  const cats = [...new Set(tasks.map(t => t.category))];
+  const weekTasks = tasks.filter(t => t.week === currentWeek);
+  return cats.map(cat => ({
+    cat,
+    A: weekTasks.filter(t => t.category === cat && t.grade === "A").length,
+    B: weekTasks.filter(t => t.category === cat && t.grade === "B").length,
+    C: weekTasks.filter(t => t.category === cat && t.grade === "C").length,
+  }));
+}
+
+// ─── KPI RENDER ──────────────────────────────────────────────────────────────
+
+function animateValue(el, target, prefix = "") {
+  el.classList.add("animating");
+  let start = 0;
+  const duration = 600;
+  const step = (ts) => {
+    if (!start) start = ts;
+    const p = Math.min((ts - start) / duration, 1);
+    const ease = 1 - Math.pow(1 - p, 3);
+    el.textContent = prefix + Math.round(target * ease).toLocaleString();
+    if (p < 1) requestAnimationFrame(step);
+    else { el.textContent = prefix + target.toLocaleString("en-IN"); el.classList.remove("animating"); }
+  };
+  requestAnimationFrame(step);
+}
+
+function updateKPIs() {
+  const s = getStats(currentWeek);
+  const prev = currentWeek > 1 ? getStats(currentWeek - 1) : { totalGBP: 0, totalTasks: 0, avgGBP: 0 };
+  const overall = getStats(null);
+  
+  animateValue(document.getElementById("kpi-inr"), s.totalGBP, "₹");
+  animateValue(document.getElementById("kpi-tasks"), s.totalTasks);
+  animateValue(document.getElementById("kpi-participants"), s.participants);
+  animateValue(document.getElementById("kpi-avg"), s.avgGBP, "₹");
+  animateValue(document.getElementById("kpi-grade-a"), s.gradeA);
+  document.getElementById("kpi-grade-a-pct").textContent = s.totalTasks > 0 ? `${Math.round(s.gradeA/s.totalTasks*100)}% of total tasks` : "—";
+  
+  const inrDelta = s.totalGBP - prev.totalGBP;
+  const inrPct = prev.totalGBP ? Math.round((inrDelta/prev.totalGBP)*100) : 0;
+  const inrDeltaEl = document.getElementById("kpi-inr-delta");
+  if(currentWeek === 1) {
+    inrDeltaEl.textContent = "—";
+    inrDeltaEl.className = "kpi-delta neutral";
+  } else {
+    inrDeltaEl.textContent = `${inrDelta >= 0 ? '↑ +' : '↓ '}${Math.abs(inrPct)}% vs last week`;
+    inrDeltaEl.className = `kpi-delta ${inrDelta >= 0 ? 'up' : 'down'}`;
+  }
+
+  const tasksDelta = s.totalTasks - prev.totalTasks;
+  const tasksDeltaEl = document.getElementById("kpi-tasks-delta");
+  if(currentWeek === 1) {
+    tasksDeltaEl.textContent = "—";
+    tasksDeltaEl.className = "kpi-delta neutral";
+  } else {
+    tasksDeltaEl.textContent = `${tasksDelta >= 0 ? '↑ +' : '↓ '}${Math.abs(tasksDelta)} vs last week`;
+    tasksDeltaEl.className = `kpi-delta ${tasksDelta >= 0 ? 'up' : 'down'}`;
+  }
+
+  const avgDelta = s.avgGBP - overall.avgGBP;
+  const avgDeltaEl = document.getElementById("kpi-avg-delta");
+  avgDeltaEl.textContent = `${avgDelta >= 0 ? '↑' : '↓'} vs programme avg`;
+  avgDeltaEl.className = `kpi-delta ${avgDelta >= 0 ? 'up' : 'down'}`;
+}
+
+// ─── CHARTS ──────────────────────────────────────────────────────────────────
+
+function getChartDefaults() {
+  const s = getComputedStyle(document.documentElement);
+  return {
+    textColor: s.getPropertyValue("--color-text-muted").trim(),
+    gridColor: s.getPropertyValue("--color-divider").trim(),
+    primary: s.getPropertyValue("--color-primary").trim(),
+    blue: s.getPropertyValue("--color-blue").trim(),
+    gold: s.getPropertyValue("--color-gold").trim(),
+    surface: s.getPropertyValue("--color-surface-offset").trim(),
+  };
+}
+
+function buildTrendChart() {
+  const ctx = document.getElementById("trendChart").getContext("2d");
+  const trend = getWeeklyTrend();
+  const cd = getChartDefaults();
+  if (charts.trend) charts.trend.destroy();
+  charts.trend = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: ["Week 1","Week 2","Week 3","Week 4"],
+      datasets: [
+        { label: "INR Earned", data: trend.map(t=>t.gbp), backgroundColor: cd.primary + "cc", borderRadius: 6, yAxisID: "y1" },
+        { label: "Tasks", data: trend.map(t=>t.count), type: "line", borderColor: cd.gold, backgroundColor: "transparent", pointBackgroundColor: cd.gold, pointRadius: 5, tension: 0.4, yAxisID: "y2" }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: cd.textColor, font: { size: 11 }, boxWidth: 12 } }, tooltip: { mode: "index", callbacks: { label: (ctx) => ctx.dataset.label === "INR Earned" ? `INR Earned: ₹${ctx.raw.toLocaleString("en-IN")}` : `${ctx.dataset.label}: ${ctx.raw}` } } },
+      scales: {
+        x: { grid: { color: cd.gridColor }, ticks: { color: cd.textColor } },
+        y1: { grid: { color: cd.gridColor }, ticks: { color: cd.textColor, callback: v => `₹${Number(v).toLocaleString("en-IN")}` }, position: "left" },
+        y2: { grid: { display: false }, ticks: { color: cd.textColor }, position: "right" }
+      }
+    }
+  });
+}
+
+function buildDeptChart() {
+  const ctx = document.getElementById("deptChart").getContext("2d");
+  const ds = getDeptStats();
+  const cd = getChartDefaults();
+  if (charts.dept) charts.dept.destroy();
+  charts.dept = new Chart(ctx, {
+    type: "doughnut",
+    data: {
+      labels: ds.map(d=>d.dept),
+      datasets: [{ data: ds.map(d=>d.gbp), backgroundColor: [cd.primary, cd.blue, cd.gold], borderWidth: 0, hoverOffset: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, cutout: "68%",
+      plugins: { legend: { labels: { color: cd.textColor, font: { size: 11 }, boxWidth: 10 } } }
+    }
+  });
+
+  const totalGBP = ds.reduce((s,d) => s+d.gbp, 0);
+  document.getElementById("dept-list").innerHTML = ds.map(d => {
+    const pct = totalGBP > 0 ? Math.round(d.gbp/totalGBP*100) : 0;
+    const color = { Operations: cd.primary, Engineering: cd.blue, Marketing: cd.gold }[d.dept];
+    return `<div class="dept-row">
+      <div class="dept-meta">
+        <span class="dept-name">${d.dept}</span>
+        <span class="dept-gbp">₹${d.gbp.toLocaleString()}</span>
+      </div>
+      <div class="dept-bar-bg">
+        <div class="dept-bar-fill" style="width:${pct}%;background:${color}"></div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+function buildCategoryChart() {
+  const ctx = document.getElementById("categoryChart").getContext("2d");
+  const cs = getCategoryStats();
+  const cd = getChartDefaults();
+  if (charts.category) charts.category.destroy();
+  charts.category = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: cs.map(c=>c.cat),
+      datasets: [
+        { label: "Grade A", data: cs.map(c=>c.A), backgroundColor: cd.primary + "dd", borderRadius: 4 },
+        { label: "Grade B", data: cs.map(c=>c.B), backgroundColor: cd.gold + "dd", borderRadius: 4 },
+        { label: "Grade C", data: cs.map(c=>c.C), backgroundColor: cd.blue + "88", borderRadius: 4 },
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color: cd.textColor, font: { size: 11 }, boxWidth: 12 } } },
+      scales: {
+        x: { stacked: true, grid: { display: false }, ticks: { color: cd.textColor } },
+        y: { stacked: true, grid: { color: cd.gridColor }, ticks: { color: cd.textColor, stepSize: 1 } }
+      }
+    }
+  });
+}
+
+function buildAllCharts() {
+  buildTrendChart();
+  buildDeptChart();
+  buildCategoryChart();
+}
+
+// ─── WEEK GRID ────────────────────────────────────────────────────────────────
+
+function buildWeekGrid() {
+  const grid = document.getElementById("week-grid");
+  grid.innerHTML = [1,2,3,4].map(w => {
+    const wt = tasks.filter(t => t.week === w);
+    const gbp = wt.reduce((s,t) => s+t.gbp, 0);
+    const isCurrent = w === 4;
+    return `<div class="week-cell ${isCurrent ? "current" : ""}">
+      <div class="week-cell-label">Week ${w} ${isCurrent ? '<span class="current-tag">Current</span>' : ""}
+      </div>
+      <div class="week-cell-tasks">${wt.length} tasks</div>
+      <div class="week-cell-gbp">₹${gbp.toLocaleString()}</div>
+    </div>`;
+  }).join("");
+}
+
+// ─── PARTICIPANTS TABLE ────────────────────────────────────────────────────────
+
+function buildParticipantTable() {
+  let list = PARTICIPANTS.map(p => ({ ...p, ...getParticipantStats(p.id) }));
+  list.sort((a,b) => {
+    const av = a[sortField], bv = b[sortField];
+    if (typeof av === "string") return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+    return sortAsc ? av - bv : bv - av;
+  });
+  if (deptFilter) list = list.filter(p => p.dept === deptFilter);
+  document.getElementById("participant-tbody").innerHTML = list.map((p,i) => {
+    const pct = Math.min(100, Math.round(p.gbp/p.target*100));
+    return `<tr>
+      <td style="color:var(--color-text-muted);width:32px">${i+1}</td>
+      <td style="font-weight:600">${p.name}</td>
+      <td>${deptBadge(p.dept)}</td>
+      <td style="font-family:var(--font-mono);font-weight:600;color:var(--color-primary)">₹${p.gbp.toLocaleString()}</td>
+      <td style="font-family:var(--font-mono)">${p.taskCount}</td>
+      <td>${gradeBadge(p.topGrade)}</td>
+      <td style="min-width:180px">
+        <div class="progress-wrap">
+          <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:${pct}%"></div></div>
+          <span class="progress-val">${pct}%</span>
+        </div>
+      </td>
+      <td>${sparkline(p.id)}</td>
+    </tr>`;
+  }).join("");
+}
+
+function sortTable(field) {
+  if (sortField === field) sortAsc = !sortAsc; else { sortField = field; sortAsc = false; }
+  buildParticipantTable();
+}
+
+// ─── TASKS TABLE ──────────────────────────────────────────────────────────────
+
+function buildTaskTable(deptF = "", gradeF = "") {
+  let list = [...tasks];
+  if (deptF) list = list.filter(t => {
+    const p = getParticipant(t.pid);
+    return p && p.dept === deptF;
+  });
+  if (gradeF) list = list.filter(t => t.grade === gradeF);
+  document.getElementById("task-tbody").innerHTML = list.map(t => {
+    const p = getParticipant(t.pid);
+    return `<tr>
+      <td style="font-family:var(--font-mono);color:var(--color-text-muted)">${t.id}</td>
+      <td style="font-weight:500">${p ? p.name : "—"}</td>
+      <td>${p ? deptBadge(p.dept) : "—"}</td>
+      <td><span style="color:var(--color-text-muted)">${t.category}</span></td>
+      <td>${t.task}</td>
+      <td>${gradeBadge(t.grade)}</td>
+      <td style="font-family:var(--font-mono);color:var(--color-primary);font-weight:600">₹${t.gbp}</td>
+      <td style="font-family:var(--font-mono);color:var(--color-text-muted)">Wk ${t.week}</td>
+    </tr>`;
+  }).join("");
+}
+
+function filterTasks(dept, grade) {
+  buildTaskTable(dept, grade);
+}
+
+// ─── VIEWS ────────────────────────────────────────────────────────────────────
+
+function toggleSidebar() {
+  document.querySelector('.sidebar').classList.toggle('open');
+  document.querySelector('.sidebar-overlay').classList.toggle('open');
+}
+
+function closeSidebarOnMobile() {
+  if (window.innerWidth <= 900) {
+    document.querySelector('.sidebar').classList.remove('open');
+    document.querySelector('.sidebar-overlay').classList.remove('open');
+  }
+}
+
+function showView(name) {
+  document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+  document.getElementById("view-" + name).classList.add("active");
+  document.querySelectorAll(".nav-item[data-nav]").forEach(n => n.classList.remove("active"));
+  const navEl = document.querySelector(`[data-nav="${name}"]`);
+  if (navEl) navEl.classList.add("active");
+  currentView = name;
+  const titles = { overview: "Team Performance Overview", participants: "Participant Leaderboard", tasks: "Task Log" };
+  document.getElementById("view-title").textContent = titles[name] || name;
+  if (name === "participants") buildParticipantTable();
+  if (name === "tasks") buildTaskTable();
+  closeSidebarOnMobile();
+}
+
+function filterDept(dept) {
+  deptFilter = dept;
+  showView("participants");
+  document.querySelectorAll(".nav-item[data-nav]").forEach(n => n.classList.remove("active"));
+  const key = { Operations:"dept-ops", Engineering:"dept-eng", Marketing:"dept-mkt" }[dept];
+  document.querySelector(`[data-nav="${key}"]`).classList.add("active");
+  document.getElementById("view-title").textContent = dept + " Participants";
+  closeSidebarOnMobile();
+}
+
+function setWeek(w, btn) {
+  currentWeek = w;
+  document.getElementById("sidebar-week").textContent = `Week ${w}`;
+  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  buildAllCharts();
+  updateKPIs();
+  buildWeekGrid();
+}
+
+// ─── MODAL ────────────────────────────────────────────────────────────────────
+
+function openAddModal() {
+  const sel = document.getElementById("modal-participant");
+  sel.innerHTML = '<option value="">Select participant...</option>' +
+    PARTICIPANTS.map(p => `<option value="${p.id}">${p.name} (${p.dept})</option>`).join("");
+  document.getElementById("add-modal").classList.add("open");
+}
+
+function closeModal() {
+  document.getElementById("add-modal").classList.remove("open");
+}
+
+function submitTask() {
+  const pid = parseInt(document.getElementById("modal-participant").value);
+  const category = document.getElementById("modal-category").value;
+  const grade = document.getElementById("modal-grade").value;
+  const gbp = parseInt(document.getElementById("modal-gbp").value);
+  const week = parseInt(document.getElementById("modal-week").value);
+  const taskName = document.getElementById("modal-task").value.trim();
+
+  if (!pid || !gbp || !taskName) { toast("Please fill all required fields", "error"); return; }
+
+  const newId = "T" + String(tasks.length + 1).padStart(3, "0");
+  tasks.push({ id: newId, pid, category, task: taskName, grade, gbp, week });
+  closeModal();
+  toast(`Task logged: ₹${gbp.toLocaleString("en-IN")} for ${getParticipant(pid).name}`);
+  buildAllCharts();
+  updateKPIs();
+  buildWeekGrid();
+  if (currentView === "participants") buildParticipantTable();
+  if (currentView === "tasks") buildTaskTable();
+}
+
+// ─── EXPORT ──────────────────────────────────────────────────────────────────
+
+function exportCSV() {
+  const headers = "Task ID,Participant,Department,Category,Task,Grade,INR,Week";
+  const rows = tasks.map(t => {
+    const p = getParticipant(t.pid);
+    return [t.id, p ? p.name : "", p ? p.dept : "", t.category, `"${t.task}"`, t.grade, t.gbp, t.week].join(",");
+  });
+  const blob = new Blob([headers + "\n" + rows.join("\n")], { type: "text/csv" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "team-performance-export-inr.csv";
+  a.click();
+  toast("CSV exported successfully");
+}
+
+// ─── THEME TOGGLE ─────────────────────────────────────────────────────────────
+
+(function() {
+  const t = document.querySelector("[data-theme-toggle]"), r = document.documentElement;
+  let d = "dark"; r.setAttribute("data-theme", d);
+  t && t.addEventListener("click", () => {
+    d = d === "dark" ? "light" : "dark";
+    r.setAttribute("data-theme", d);
+    t.setAttribute("aria-label", "Switch to " + (d === "dark" ? "light" : "dark") + " mode");
+    t.innerHTML = d === "dark"
+      ? `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>`
+      : `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+    setTimeout(() => { buildAllCharts(); }, 50);
+  });
+})();
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+
+document.addEventListener("DOMContentLoaded", () => {
+  lucide.createIcons();
+  updateKPIs();
+  buildAllCharts();
+  buildWeekGrid();
+  document.getElementById("add-modal").addEventListener("click", e => {
+    if (e.target === e.currentTarget) closeModal();
+  });
+});
+</script>
+</body>
+</html>
